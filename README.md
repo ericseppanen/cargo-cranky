@@ -6,7 +6,7 @@ That's not possible with **clippy**, but it is possible with **cranky**!
 
 cargo-cranky is just a wrapper around cargo-clippy; it examines your `Cranky.toml` config file, and constructs the necessary cargo-clippy command line.
 
-For example, if `Clippy.toml` contains this:
+For example, if `Cranky.toml` contains this:
 
 ```txt
 warn = [
