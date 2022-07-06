@@ -1,0 +1,16 @@
+[package]
+name = "cargo-cranky"
+authors = ["Eric Seppanen <eds@reric.net>"]
+description = "Easy to configure wrapper for clippy"
+keywords = ["cargo", "clippy"]
+categories = ["development-tools::cargo-plugins"]
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/ericseppanen/cargo-cranky"
+#readme = "README.md"
+rust-version = "1.56"
+
+[dependencies]
+serde = { version = "1.0.138", features = ["derive"] }
+toml = "0.5.9"
