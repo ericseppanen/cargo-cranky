@@ -8,7 +8,7 @@ cargo-cranky is just a wrapper around cargo-clippy; it examines your `Cranky.tom
 
 For example, if `Cranky.toml` contains this:
 
-```txt
+```toml
 warn = [
   "empty_structs_with_brackets",
   "cast_possible_truncation",
@@ -39,6 +39,26 @@ You may find some useful clippy lints for your project in the [clippy documentat
 
 `cargo install cargo-cranky`
 
+### Configuring
+
+Create a file called `Cranky.toml` at the top of your project tree. The file can contain keys `allow`, `warn`, or `deny` that contain an array of clippy lint names.
+
+Example:
+```toml
+warn = [
+  "empty_structs_with_brackets",
+  "cast_possible_truncation",
+]
+
+allow = [
+  "double_comparisons",
+]
+
+deny = [
+  "needless_return",
+]
+```
+
 ### FAQ
 
 **Does it work with vscode?**
@@ -50,5 +70,19 @@ Yes! Just type `cranky` into the "Check On Save: Command" setting, or drop this 
 }
 ```
 
+Set it back to "check" (or "clippy") to return to the previous behavior.
+
+**Is this reckless or non-idiomatic?**
+
+That depends on how you use it. If your goal is to enforce a non-idiomatic coding style, that's probably not a great idea. Additionally, using `allow` to suppress clippy lints that are enabled by default is not recommended. Sometimes that kind of thing is necessary.
+
+The main goal of this tool is to make it easier to enable additional clippy lints, that improve code maintainability or safety (i.e. `cast_possible_truncation`).
+
+**I have ~~complaints~~ suggestions!**
+
+Please [file a GitHub issue][github-issue] if you have ideas that could make this tool better.
+
+
+[github-issue]: https://github.com/ericseppanen/cargo-cranky/issues
 [clippy]: https://github.com/rust-lang/rust-clippy#readme
 [clippy-docs]: https://rust-lang.github.io/rust-clippy/stable/index.html
