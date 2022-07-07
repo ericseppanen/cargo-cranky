@@ -1,8 +1,8 @@
 use std::env::current_dir;
-use std::error::Error;
-use std::fs::File;
-use std::io::Read;
+use std::fs;
+use std::io;
 
+use anyhow::{Context, Result};
 use serde::Deserialize;
 
 use crate::Options;
@@ -18,7 +18,7 @@ pub(crate) struct CrankyConfig {
 }
 
 impl CrankyConfig {
-    pub(crate) fn get_config(options: &Options) -> Result<CrankyConfig, Box<dyn Error>> {
+    pub(crate) fn get_config(options: &Options) -> Result<CrankyConfig> {
         // Search for Cranky.toml in all parent directories.
         let mut dir = current_dir()
             .expect("current dir")
@@ -28,25 +28,32 @@ impl CrankyConfig {
         loop {
             let mut config_path = dir.clone();
             config_path.push("Cranky.toml");
-            // We don't care if the file open fails; we'll just keep
-            // searching the parent directory.
-            // FIXME: this should explicitly check for "nonexistent file";
-            // other errors like permissions should be a hard error.
-            if let Ok(mut f) = File::open(&config_path) {
-                if options.verbose > 0 {
-                    eprintln!("Found config file at {:?}", config_path);
+            match fs::read(&config_path) {
+                Ok(toml_bytes) => {
+                    if options.verbose > 0 {
+                        eprintln!("Read config file at {:?}", config_path);
+                    }
+                    let config: CrankyConfig = toml::from_slice(&toml_bytes)?;
+                    return Ok(config);
                 }
-                let mut toml_bytes = Vec::new();
-                f.read_to_end(&mut toml_bytes).expect("toml file read");
-                let config: CrankyConfig = toml::from_slice(&toml_bytes)?;
-                return Ok(config);
+                Err(e) => {
+                    match e.kind() {
+                        // Not found? Go up one directory and try again.
+                        io::ErrorKind::NotFound => match dir.parent().to_owned() {
+                            None => break,
+                            Some(parent) => dir = parent.to_owned(),
+                        },
+                        // Any other error kind is fatal.
+                        _ => {
+                            Err(e).with_context(|| format!("Failed to read {:?}", config_path))?;
+                        }
+                    }
+                }
             }
+        }
 
-            // Go up one directory and try again.
-            match dir.parent().to_owned() {
-                None => break,
-                Some(parent) => dir = parent.to_owned(),
-            }
+        if options.verbose > 0 {
+            eprintln!("No Cranky.toml file found.");
         }
 
         // We didn't find a config file. Just run clippy with no additional arguments.

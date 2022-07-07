@@ -81,7 +81,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     if options.dry_run || options.verbose > 0 {
         let print_args = all_args.join(" ");
         println!("> cargo clippy {}", print_args);
-    } else {
+    }
+
+    if !options.dry_run {
         let cmd_result = Command::new("cargo").arg("clippy").args(all_args).status();
         let exit_code = match cmd_result {
             Ok(exit_status) => {
