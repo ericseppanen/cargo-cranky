@@ -74,7 +74,9 @@ Set it back to "check" (or "clippy") to return to the previous behavior.
 
 **Is this reckless or non-idiomatic?**
 
-That depends on how you use it. If your goal is to enforce a non-idiomatic coding style, that's probably not a great idea. Additionally, using `allow` to suppress clippy lints that are enabled by default is not recommended. Sometimes that kind of thing is necessary.
+That depends on how you use it. If your goal is to enforce a non-idiomatic coding style, that's probably not a great idea.
+
+Another questionable choice would be using `Cranky.toml` to suppress clippy lints that are enabled by default, though I'm sure there are rare conditions where that might make sense. It's still probably better to do that using the `#[allow(clippy::some_lint)]` syntax, since that gives you a chance to add a comment explaining your reasoning.
 
 The main goal of this tool is to make it easier to enable additional clippy lints, that improve code maintainability or safety (i.e. `cast_possible_truncation`).
 
