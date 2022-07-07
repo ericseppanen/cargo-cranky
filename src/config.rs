@@ -5,6 +5,8 @@ use std::io::Read;
 
 use serde::Deserialize;
 
+use crate::Options;
+
 #[derive(Debug, Default, Deserialize)]
 pub(crate) struct CrankyConfig {
     #[serde(default)]
@@ -16,7 +18,7 @@ pub(crate) struct CrankyConfig {
 }
 
 impl CrankyConfig {
-    pub(crate) fn get_config() -> Result<CrankyConfig, Box<dyn Error>> {
+    pub(crate) fn get_config(options: &Options) -> Result<CrankyConfig, Box<dyn Error>> {
         // Search for Cranky.toml in all parent directories.
         let mut dir = current_dir()
             .expect("current dir")
@@ -30,7 +32,10 @@ impl CrankyConfig {
             // searching the parent directory.
             // FIXME: this should explicitly check for "nonexistent file";
             // other errors like permissions should be a hard error.
-            if let Ok(mut f) = File::open(config_path) {
+            if let Ok(mut f) = File::open(&config_path) {
+                if options.verbose > 0 {
+                    eprintln!("Found config file at {:?}", config_path);
+                }
                 let mut toml_bytes = Vec::new();
                 f.read_to_end(&mut toml_bytes).expect("toml file read");
                 let config: CrankyConfig = toml::from_slice(&toml_bytes)?;
