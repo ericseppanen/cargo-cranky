@@ -1,17 +1,17 @@
 # cargo-cranky
 
-I wish that I could check in a file that would specify various [`clippy`][clippy] lints for my entire Cargo workspace, and have that be applied to all the crates, libraries, binaries, and examples.
+I wish that I could check in a file that would specify Rust lints for my entire Cargo workspace, and have that be applied to all the crates, libraries, binaries, and examples.
 
-That's not possible with **clippy**, but it is possible with **cranky**!
+Doing this with just Rust/Cargo/Clippy can be a bit of a pain. `cargo-cranky` makes it a little easier!
 
-cargo-cranky is just a wrapper around cargo-clippy; it examines your `Cranky.toml` config file, and constructs the necessary cargo-clippy command line.
+`cargo-cranky` is just a wrapper around `cargo clippy`; it examines your `Cranky.toml` config file, and constructs the necessary `cargo clippy` command line. Most arguments are passed through to clippy, so it should work from every context where clippy works (IDEs, CI scripts, etc).
 
 For example, if `Cranky.toml` contains this:
 
 ```toml
 warn = [
-  "empty_structs_with_brackets",
-  "cast_possible_truncation",
+  "clippy::empty_structs_with_brackets",
+  "clippy::cast_possible_truncation",
 ]
 ```
 
@@ -46,22 +46,29 @@ Create a file called `Cranky.toml` at the top of your project tree. The file can
 Example:
 ```toml
 deny = [
-  "needless_return",
+  # My crate should never need unsafe code.
+  "unsafe_code",
 ]
 
 warn = [
-  "empty_structs_with_brackets",
-  "cast_possible_truncation",
+  "clippy::empty_structs_with_brackets",
+  "clippy::cast_possible_truncation",
 ]
 
 allow = [
-  "double_comparisons",
+  "clippy::double_comparisons",
 ]
 ```
 
 Note: in the case of overlap, `allow` will always override `warn`, which in turn will always override `deny`. The order of these fields in `Cranky.toml` has no effect.
 
 ### FAQ
+
+**Can I specify non-clippy lints?**
+
+Yes! Try for example `unsafe_code` or `missing_docs`.
+
+Note: Clippy lints should be specified using the long syntax, e.g. `clippy::some_lint_name`. Clippy will issue a warning if the prefix is missing.
 
 **Does it work with vscode?**
 
@@ -78,9 +85,9 @@ Set it back to "check" (or "clippy") to return to the previous behavior.
 
 That depends on how you use it. If your goal is to enforce a non-idiomatic coding style, that's probably not a great idea.
 
-Another questionable choice would be using `Cranky.toml` to suppress clippy lints that are enabled by default, though I'm sure there are rare conditions where that might make sense. It's still probably better to do that using the `#[allow(clippy::some_lint)]` syntax, since that gives you a chance to add a comment explaining your reasoning.
+If you want to suppress lints that are enabled by default, it's probably better to do that using the `#[allow(clippy::some_lint)]` syntax in the source file, since that gives you a chance to add a comment explaining your reasoning.
 
-The main goal of this tool is to make it easier to enable additional clippy lints, that improve code maintainability or safety (i.e. `cast_possible_truncation`).
+The main goal of this tool is to make it easier to enable additional clippy lints, that improve code maintainability or safety (i.e. `clippy::cast_possible_truncation`).
 
 **I have ~~complaints~~ suggestions!**
 
