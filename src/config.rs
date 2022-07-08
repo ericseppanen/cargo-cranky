@@ -39,7 +39,7 @@ impl CrankyConfig {
                 Err(e) => {
                     match e.kind() {
                         // Not found? Go up one directory and try again.
-                        io::ErrorKind::NotFound => match dir.parent().to_owned() {
+                        io::ErrorKind::NotFound => match dir.parent() {
                             None => break,
                             Some(parent) => dir = parent.to_owned(),
                         },
