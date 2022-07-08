@@ -45,6 +45,10 @@ Create a file called `Cranky.toml` at the top of your project tree. The file can
 
 Example:
 ```toml
+deny = [
+  "needless_return",
+]
+
 warn = [
   "empty_structs_with_brackets",
   "cast_possible_truncation",
@@ -53,11 +57,9 @@ warn = [
 allow = [
   "double_comparisons",
 ]
-
-deny = [
-  "needless_return",
-]
 ```
+
+Note: in the case of overlap, `allow` will always override `warn`, which in turn will always override `deny`. The order of these fields in `Cranky.toml` has no effect.
 
 ### FAQ
 
