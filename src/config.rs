@@ -114,6 +114,10 @@ mod test {
                 warn: vec!["bbb".into()],
                 deny: vec!["ccc".into()],
             }
-        )
+        );
+
+        let args = config.extra_right_args().join(" ");
+        // Ordering matters! deny -> warn -> allow is the intended behavior.
+        assert_eq!(args, "-Dccc -Wbbb -Aaaa");
     }
 }
