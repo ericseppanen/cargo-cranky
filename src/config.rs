@@ -7,7 +7,7 @@ use serde::Deserialize;
 
 use crate::Options;
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, PartialEq, Deserialize)]
 pub(crate) struct CrankyConfig {
     #[serde(default)]
     allow: Vec<String>,
@@ -75,5 +75,48 @@ impl CrankyConfig {
             args.push(format!("clippy::{}", lint));
         }
         args
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn parse_toml_1() {
+        let toml_bytes = br#"
+            warn = [
+                "aaa",
+                "bbb",
+            ]"#;
+        let config: CrankyConfig = toml::from_slice(toml_bytes).unwrap();
+
+        assert_eq!(
+            config,
+            CrankyConfig {
+                allow: vec![],
+                warn: vec!["aaa".into(), "bbb".into()],
+                deny: vec![],
+            }
+        )
+    }
+
+    #[test]
+    fn parse_toml_2() {
+        let toml_bytes = br#"
+            allow = [ "aaa" ]
+            warn = [ "bbb" ]
+            deny = [ "ccc" ]
+        "#;
+        let config: CrankyConfig = toml::from_slice(toml_bytes).unwrap();
+
+        assert_eq!(
+            config,
+            CrankyConfig {
+                allow: vec!["aaa".into()],
+                warn: vec!["bbb".into()],
+                deny: vec!["ccc".into()],
+            }
+        )
     }
 }
