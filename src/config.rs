@@ -62,17 +62,14 @@ impl CrankyConfig {
 
     pub(crate) fn extra_right_args(&self) -> Vec<String> {
         let mut args = Vec::new();
-        for lint in &self.allow {
-            args.push("-A".to_string());
-            args.push(format!("clippy::{}", lint));
+        for lint in &self.deny {
+            args.push(format!("-D{}", lint));
         }
         for lint in &self.warn {
-            args.push("--warn".to_string());
-            args.push(format!("clippy::{}", lint));
+            args.push(format!("-W{}", lint));
         }
-        for lint in &self.deny {
-            args.push("-D".to_string());
-            args.push(format!("clippy::{}", lint));
+        for lint in &self.allow {
+            args.push(format!("-A{}", lint));
         }
         args
     }
