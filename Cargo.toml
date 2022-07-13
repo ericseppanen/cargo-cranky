@@ -2,13 +2,13 @@
 name = "cargo-cranky"
 authors = ["Eric Seppanen <eds@reric.net>"]
 description = "Easy to configure wrapper for clippy"
-keywords = ["cargo", "clippy"]
+keywords = ["cargo", "clippy", "lint", "lints"]
 categories = ["development-tools::cargo-plugins"]
 version = "0.3.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/ericseppanen/cargo-cranky"
-#readme = "README.md"
+readme = "README.md"
 rust-version = "1.56"
 
 [dependencies]
