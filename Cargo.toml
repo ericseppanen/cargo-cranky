@@ -15,7 +15,13 @@ rust-version = "1.56"
 anyhow = "1.0.58"
 serde = { version = "1.0.138", features = ["derive"] }
 toml = "0.5.9"
+cargo = "0.68.0"
+clap = "4.1.4"
+toml_edit = { version = "0.15.0", features = ["serde", "easy"] }
 
 [package.metadata.release]
 dev-version = false
 pre-release-commit-message = "release {{version}}"
+
+[workspace.metadata.lints]
+deny = ["unsafe_code"]
