@@ -75,7 +75,7 @@ Note: Clippy lints should be specified using the long syntax, e.g. `clippy::some
 Yes! Just type `cranky` into the "Check On Save: Command" setting, or drop this into `settings.json`:
 ```txt
 {
-    "rust-analyzer.checkOnSave.command": "cranky"
+    "rust-analyzer.check.command": "cranky"
 }
 ```
 
