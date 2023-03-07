@@ -1,8 +1,8 @@
 use std::env::current_dir;
-use std::fs;
 use std::io;
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Result};
+use cargo::util::command_prelude::ArgMatchesExt;
 use serde::Deserialize;
 
 use crate::Options;
@@ -18,46 +18,62 @@ pub(crate) struct CrankyConfig {
 }
 
 impl CrankyConfig {
-    pub(crate) fn get_config(options: &Options) -> Result<CrankyConfig> {
-        // Search for Cranky.toml in all parent directories.
-        let mut dir = current_dir()
+    pub(crate) fn get_config(_options: &Options) -> Result<CrankyConfig> {
+        // Search for Cargo.toml in all parent directories.
+        let dir = current_dir()
             .expect("current dir")
             .canonicalize()
             .expect("canonicalize current dir");
 
-        loop {
-            let mut config_path = dir.clone();
-            config_path.push("Cranky.toml");
-            match fs::read(&config_path) {
-                Ok(toml_bytes) => {
-                    if options.verbose > 0 {
-                        eprintln!("Read config file at {:?}", config_path);
-                    }
-                    let config: CrankyConfig = toml::from_slice(&toml_bytes)?;
-                    return Ok(config);
-                }
-                Err(e) => {
-                    match e.kind() {
-                        // Not found? Go up one directory and try again.
-                        io::ErrorKind::NotFound => match dir.parent() {
-                            None => break,
-                            Some(parent) => dir = parent.to_owned(),
-                        },
-                        // Any other error kind is fatal.
-                        _ => {
-                            Err(e).with_context(|| format!("Failed to read {:?}", config_path))?;
-                        }
-                    }
-                }
+
+        // redirect cargo output into the void
+        let cursor = io::Cursor::new(Vec::<u8>::new());
+        let shell = cargo::core::Shell::from_write(Box::new(cursor));
+        let Some(home_dir) = cargo::util::homedir(&dir) else {
+            bail!("Could not find home directory");
+        };
+        let mut cargo_config = cargo::Config::new(shell, dir, home_dir);
+
+        cargo_config.configure(
+            0,
+            false,
+            None,
+            false,
+            false,
+            false,
+            &None,
+            &[],
+            &[],
+        )?;
+
+
+        let arg_matches = cargo::util::command_prelude::ArgMatches::default();
+        let mut ws = arg_matches.workspace(&cargo_config)?;
+
+        fn get_from_custom_metadata_lints_table(value: &toml_edit::easy::Value) -> Result<CrankyConfig> {
+            Ok(value.clone().try_into()?)
+        }
+
+        const METADATA_KEY: &str = "lints";
+
+        fn get_from_custom_metadata(value: Option<&toml_edit::easy::Value>) -> Result<CrankyConfig> {
+            Ok(value.and_then(|metadata| metadata.get(METADATA_KEY))
+                .map(get_from_custom_metadata_lints_table).transpose()?.unwrap_or_default())
+        }
+
+        let cfg = get_from_custom_metadata(ws.custom_metadata())?;
+
+        {
+            ws.load_workspace_config()?;
+
+            for p in ws.members() {
+                let _cfg_for_package = get_from_custom_metadata(p.manifest().custom_metadata())?;
+
+                // TODO: maybe also get package-specific lints here
             }
         }
 
-        if options.verbose > 0 {
-            eprintln!("No Cranky.toml file found.");
-        }
-
-        // We didn't find a config file. Just run clippy with no additional arguments.
-        Ok(CrankyConfig::default())
+        Ok(cfg)
     }
 
     pub(crate) fn extra_right_args(&self) -> Vec<String> {
